@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>らくせんしゃの もり よこはま 2026</title>
+<meta name="description" content="選挙で選ばれなかった提案が、森の妖精になって誰かの困りごとを待っている。2026年横浜市長選の6候補の提案から生まれた、ブラウザで遊べる小さな森のゲーム。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="らくせんしゃの もり よこはま 2026">
+<meta property="og:description" content="えらばれなかった ていあんは、きえて しまったわけでは ありません。横浜市長選2026の提案から生まれた妖精たちに会いに行こう。">
+<!-- GitHub Pages に置いたら、og:image と og:url を絶対URLに書き換えてください -->
+<meta property="og:image" content="og.png">
+<meta property="og:url" content="">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#17291F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yusei+Magic&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#17291F; --paper:#EEF2E6; --ink:#1F2C25; --muted:#5B6E62; --line:#C9D4C2;
+  --lantern:#F2C14E; --moss:#2F5240; --chip:#E1E9D8; --warn:#B4472E; --ok:#2F7A4E;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#1C2B24; --ink:#E4ECE1; --muted:#9FB3A6; --line:#34483D; --chip:#26382F; --moss:#8FC0A2; --warn:#F09A80; --ok:#8FD3A8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1C2B24; --ink:#E4ECE1; --muted:#9FB3A6; --line:#34483D; --chip:#26382F; --moss:#8FC0A2; --warn:#F09A80; --ok:#8FD3A8;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;
+  -webkit-tap-highlight-color:transparent;overflow:hidden}
+#app{position:relative;height:100%;overflow:hidden}
+#game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;pointer-events:none;gap:8px}
+.brand{color:#EAF0E2;min-width:0}
+.brand h1{margin:0;white-space:nowrap;font-family:"Yusei Magic","Zen Maru Gothic",sans-serif;font-weight:400;font-size:1.3rem;letter-spacing:.06em;
+  text-shadow:0 1px 8px rgba(0,0,0,.6)}
+.brand p{margin:2px 0 0;font-size:.76rem;color:#B9CBB8;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.hud-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.count{font-size:.76rem;color:#F6E3A6;background:rgba(20,36,28,.72);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.btns{display:flex;gap:6px}
+.ghost{pointer-events:auto;font:inherit;font-size:.82rem;color:#EAF0E2;background:rgba(20,36,28,.75);
+  border:1px solid rgba(242,193,78,.5);border-radius:999px;padding:6px 12px;cursor:pointer}
+button:focus-visible{outline:3px solid var(--lantern);outline-offset:2px}
+
+#trouble{position:absolute;left:50%;top:calc(100px + env(safe-area-inset-top,0px));transform:translateX(-50%);
+  width:min(92%,440px);background:rgba(58,24,18,.92);color:#FCE9DF;border:1.5px solid #E58A6B;border-radius:18px;
+  padding:12px 14px;display:none;gap:10px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+#trouble.show{display:flex;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:translateX(-50%) scale(.85);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+#trouble .ti{font-size:1.7rem;flex:none}
+#trouble .tt{flex:1;font-size:.95rem;line-height:1.55}
+#trouble .tt small{display:block;color:#F3BFA9;font-size:.75rem;margin-top:2px}
+#callBtn{font:inherit;font-weight:700;font-size:.9rem;background:var(--lantern);color:#2A2210;border:0;border-radius:999px;
+  padding:9px 14px;cursor:pointer;flex:none}
+
+#talk{position:absolute;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  font:inherit;font-size:1rem;font-weight:700;background:var(--lantern);color:#2A2210;border:0;border-radius:999px;
+  padding:12px 22px;box-shadow:0 0 24px rgba(242,193,78,.55);cursor:pointer;display:none;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+#talk.show{display:block}
+
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:84%;background:var(--paper);color:var(--ink);
+  border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);
+  display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px);z-index:3}
+.sheet.open{transform:translateY(0)}
+.sheet-top{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 0}
+.grip{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto}
+.closer{font:inherit;font-size:.85rem;background:none;border:0;color:var(--muted);cursor:pointer;padding:6px 4px}
+.sheet-body{overflow-y:auto;padding:8px 20px 22px;max-width:640px;width:100%;margin:0 auto}
+
+.fhead{display:flex;gap:14px;align-items:center}
+.portrait{width:84px;height:84px;flex:none;border-radius:50%}
+.sheet h2{margin:0;font-family:"Yusei Magic",sans-serif;font-weight:400;font-size:1.45rem;line-height:1.4}
+.origin{margin:4px 0 0;font-size:.85rem;color:var(--muted);line-height:1.6}
+.origin strong{color:var(--ink)}
+.voice{margin:16px 0 4px;font-size:1.05rem;line-height:2;padding-left:14px;border-left:3px solid var(--lantern)}
+.sheet h3{font-size:.95rem;margin:20px 0 8px;color:var(--moss)}
+.ideas{list-style:none;margin:0;padding:0}
+.ideas li{padding:12px 0;border-top:1px dashed var(--line)}
+.ideas li:first-child{border-top:0}
+.it{margin:0;font-weight:700;line-height:1.6}
+.ib{margin:4px 0 0;font-size:.9rem;line-height:1.75;color:var(--muted)}
+.fit{margin:8px 0 0;font-size:.85rem;line-height:1.6;background:var(--chip);border-radius:10px;padding:6px 10px;display:inline-block}
+.used{font-size:.75rem;color:var(--ok);margin-left:6px;font-weight:700}
+.note{font-size:.75rem;color:var(--muted);line-height:1.7;margin:16px 0}
+.primary{font:inherit;font-weight:700;font-size:1rem;width:100%;padding:13px;border-radius:14px;border:0;
+  background:var(--lantern);color:#2A2210;cursor:pointer;margin-top:8px}
+.primary.sub{background:transparent;border:1.5px solid var(--line);color:var(--ink);font-weight:400}
+
+.callist{display:grid;gap:8px;margin:12px 0}
+.callist button{font:inherit;text-align:left;display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:14px;
+  border:1.5px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;font-size:1rem;line-height:1.5}
+.callist button.glow{border-color:var(--lantern);box-shadow:0 0 0 3px rgba(242,193,78,.35)}
+.callist .ic{font-size:1.4rem;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none}
+.callist .sm{display:block;font-size:.8rem;color:var(--muted)}
+.back{font:inherit;font-size:.85rem;background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 0;margin-bottom:4px}
+.saved{margin:14px 0 0;padding:12px 14px;border-radius:14px;background:var(--chip);line-height:1.7}
+.saved .it{font-size:1rem}
+.miss{color:var(--warn);font-size:.95rem;line-height:1.7;margin:10px 0 0}
+.stars{color:#D9A21F;letter-spacing:.1em}
+
+.book-list{list-style:none;margin:0;padding:0}
+.book-list li{padding:10px 0;border-top:1px dashed var(--line);font-size:.92rem;line-height:1.6}
+.book-list li:first-child{border-top:0}
+.book-list .meta{color:var(--muted);font-size:.8rem}
+.dex{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 0}
+.dex span{font-size:.75rem;line-height:1.45;padding:6px 8px;border-radius:10px;background:var(--chip);color:var(--muted)}
+.dex span.on{color:var(--ink)}
+.dex span.off{opacity:.55}
+.rowbtns{display:flex;gap:8px}
+.rowbtns .primary{flex:1}
+
+#intro{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(ellipse at 50% 60%,rgba(23,41,31,.55),rgba(12,24,18,.93));overflow-y:auto;z-index:4}
+#intro .card{max-width:440px;width:100%;color:#EAF0E2;text-align:center;margin:auto}
+#intro h2{font-family:"Yusei Magic",sans-serif;font-weight:400;font-size:clamp(1.5rem,8vw,2.2rem);white-space:nowrap;margin:0;letter-spacing:.08em;
+  color:#F6E3A6;text-shadow:0 0 22px rgba(242,193,78,.45)}
+#intro .sub{margin:4px 0 0;font-size:.85rem;color:#B9CBB8;letter-spacing:.1em}
+#intro .lead{line-height:2.05;font-size:1rem;margin:16px 0}
+#intro .rules{text-align:left;font-size:.9rem;line-height:1.9;margin:0 auto 14px;max-width:350px;padding-left:1.3em}
+#intro .about{font-size:.8rem;color:#CFDCCB;line-height:1.8;margin:0 0 10px;text-align:left;background:rgba(255,255,255,.05);border-radius:12px;padding:10px 12px}
+#intro .facts{font-size:.76rem;color:#A9BDA9;line-height:1.8;margin:0 0 14px}
+#intro .how{font-size:.76rem;color:#A9BDA9;margin:12px 0 0;line-height:1.7}
+#intro .credit{font-size:.72rem;color:#8EA592;margin-top:14px}
+#intro .credit a{color:#B9CBB8}
+#intro.hide{display:none}
+
+#toast{position:absolute;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);
+  background:rgba(20,36,28,.95);color:#F6E3A6;padding:8px 16px;border-radius:999px;font-size:.85rem;line-height:1.5;
+  opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:92%;text-align:center;z-index:5}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:420px){.brand h1{font-size:1rem}.brand p{font-size:.68rem}.count{font-size:.7rem;padding:3px 8px}.ghost{font-size:.76rem;padding:5px 10px}}
+@media (prefers-reduced-motion:reduce){.sheet{transition:none}#toast{transition:none}#trouble.show{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="game" aria-label="よるの もり。ランタンを もった たびびとを うごかして、ひかる ようせいを さがします"></canvas>
+
+  <div class="hud">
+    <div class="brand">
+      <h1>らくせんしゃの もり</h1>
+      <p>よこはま しちょうせん 2026</p>
+    </div>
+    <div class="hud-right">
+      <div class="pills">
+        <span class="count" id="count">ようせい 0/6</span>
+        <span class="count" id="solvedCount">こまりごと 0/6</span>
+      </div>
+      <div class="btns">
+        <button class="ghost" id="soundBtn" aria-pressed="false" aria-label="おと">🔇</button>
+        <button class="ghost" id="bookBtn">てちょう</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="trouble" role="alert">
+    <span class="ti" id="tIcon"></span>
+    <div class="tt"><span id="tText"></span><small id="tEffect"></small></div>
+    <button id="callBtn">ようせいを よぶ</button>
+  </div>
+
+  <button id="talk"></button>
+
+  <section class="sheet" id="sheet" aria-live="polite">
+    <div class="sheet-top"><span></span><div class="grip"></div><button class="closer" id="closeBtn">もりに もどる</button></div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </section>
+
+  <div id="intro">
+    <div class="card">
+      <h2>らくせんしゃの もり</h2>
+      <p class="sub">よこはま しちょうせん 2026</p>
+      <p class="lead">えらばれなかった ていあんは、<br>きえて しまったわけでは ありません。<br>この もりで ようせいに なって、<br>だれかの こまりごとを まっています。</p>
+      <ol class="rules">
+        <li>ランタンの あかりで もりを あるき、ようせいに あって <b>ちえ</b>を きこう</li>
+        <li>こまりごとが おきたら、ぴったりの ようせいと ちえを えらんで よぼう</li>
+        <li>6つ かいけつで クリア。ちえは ぜんぶで 18こ。なんども あそんで あつめよう</li>
+      </ol>
+      <p class="about">落選した候補者の提案を、ほかの街や企業、地域で生かせる「知恵」として残しておくための試作です。勝ち負けではなく、提案の中身に出会う遊びとしてつくりました。</p>
+      <p class="facts">2026年10月18日 横浜市長選挙：立候補7人、当選は原沢敦美氏（弁護士・無所属）、投票率45.56%。<br>森には、ほかの6人の提案から生まれた妖精が住んでいます。</p>
+      <button class="primary" id="startBtn">もりに はいる</button>
+      <p class="how">やじるしキー・WASD、または がめんを おしたままで あるく<br>Space：はなしかける　E：ようせいを よぶ</p>
+      <p class="credit">企画 マツノトキヒト（<a href="https://www.facebook.com/tokmatsuno/" target="_blank" rel="noopener">@tokmatsuno</a>）・プロトタイプ版</p>
+    </div>
+  </div>
+
+  <div id="toast" role="status"></div>
+</div>
+
+<script>
+(() => {
+// 共有するときのURL（GitHub Pages のURLを入れると、シェア文に使われます。空なら今のページのURL）
+const SHARE_URL = '';
+
+const FAIRIES = [
+  { id:'michinori', name:'みちのりの ようせい', candidate:'山中竹春', tag:'前市長・無所属', color:'#7FD1C7', icon:'🚌', wing:'round', x:360, y:420,
+    voice:'まちの すみずみまで とどく「あし」と、またずに はいれる かいごの おはなしを あずかっているよ。',
+    hint:'まちの あしと、としよりの あんしんに くわしい ようせい',
+    ideas:[
+      {t:'コミュニティバスと赤字路線に財源を入れる', b:'採算だけで路線を切らず、地域の移動を公費で支える。', fit:'公共交通の空白地を抱える自治体、地域交通事業者',
+        tr:{icon:'🦶', text:'あしが いたい…。つぎの むらまで とおすぎる！', effect:'slow', fix:'もりの こみちに ちいさな バスを はしらせたよ。もうからない みちも、みんなの あしだからね。'}},
+      {t:'特養の入所待ちを平均3か月に', b:'特別養護老人ホームの待機期間を短くする。', fit:'高齢化が進む市町村、介護事業者',
+        tr:{icon:'🦉', text:'としよりの フクロウが、おせわして もらえる すが あくのを ずっと まっている…', effect:'dim', fix:'おせわの すを ふやして、まつ じかんを ぐっと みじかく したよ。'}},
+      {t:'減債基金の取り崩しを2030年度までに解消', b:'借金返済用の積立金を崩す運営から抜け出す工程を示す。', fit:'財政立て直し中の自治体',
+        tr:{icon:'🐷', text:'もりの ちょきんばこを くずしつづけて、からっぽに なりそう！', effect:'dim', fix:'ちょきんばこを くずさずに すむ よう、いつまでに なおすか きめたよ。'}}
+    ]},
+  { id:'haguruma', name:'あしたの はぐるまの ようせい', candidate:'中谷一馬', tag:'元衆院議員・無所属', color:'#9DB7F5', icon:'⚙️', wing:'pointed', x:1420, y:380,
+    voice:'はたらきかたと いどうの しくみを、あたらしい はぐるまに くみかえる あんを もっているよ。',
+    hint:'あたらしい しくみや はたらきかたに くわしい ようせい',
+    ideas:[
+      {t:'自動運転などの移動革命、マイナンバーで政策投票', b:'テクノロジーで移動と市民参加を変える。', fit:'DX・スマートシティを進める自治体',
+        tr:{icon:'🚏', text:'もりの バスの うんてんしゅが いなくて、だれも でかけられない！', effect:'slow', fix:'うんてんしゅが いなくても はしる バスを よんだよ。いきさきも みんなで えらべるんだ。'}},
+      {t:'選択的週休3日制を市役所から', b:'まず役所で試し、地域の働き方の手本にする。', fit:'人材確保に悩む企業・自治体の人事',
+        tr:{icon:'🐿️', text:'はたらきすぎの リスたちが へとへとで、だれも てつだいに こられない…', effect:'fog', fix:'まずは わたしたちから、しゅう3かの おやすみを ためしてみたよ。'}},
+      {t:'出産費用最大10万円助成・第2子保育料ゼロ', b:'子育ての入口にかかるお金を軽くする。', fit:'子育て世帯の転出に悩む自治体',
+        tr:{icon:'🐰', text:'うさぎの ふうふが、あかちゃんを むかえる おかねが たりないって なやんでる', effect:'dim', fix:'あかちゃんを むかえる おかねと、ふたりめの ほいくりょうを ささえたよ。'}}
+    ]},
+  { id:'sentei', name:'せんていの ようせい', candidate:'福山敦士', tag:'会社社長・参政党推薦', color:'#C9D97A', icon:'✂️', wing:'leaf', x:280, y:1160,
+    voice:'しげりすぎた えだを いちど ぜんぶ みなおす、ゼロからの ていれが とくいだよ。',
+    hint:'いまある ものを みなおして いかす ようせい',
+    ideas:[
+      {t:'ゼロベースの市政改革・部局再編', b:'組織と大型事業を前例にとらわれず見直す。', fit:'組織改革を考える自治体・企業',
+        tr:{icon:'🌿', text:'いばらが しげって、みちが きえちゃった！', effect:'thorn', fix:'いらない えだを ゼロから みなおして、みちを ひらいたよ。'}},
+      {t:'学校体育館の活用と高齢者の社会参加', b:'今ある施設を地域の居場所として使い直す。', fit:'公共施設の再活用を探る自治体',
+        tr:{icon:'🏚️', text:'おおきな こやは からっぽ。おとしよりたちは でかける ばしょが なくて さみしそう', effect:'fog', fix:'あいた こやを ひらいて、おとしよりの あつまる ばしょに したよ。'}},
+      {t:'事業承継の後押し', b:'後継ぎのいない地域の仕事をつなぐ。', fit:'後継者不足の商店街、中小企業団体',
+        tr:{icon:'🥖', text:'パンやの クマが いんたい。あとを つぐ ひとが いなくて、おみせが しまりそう', effect:'dim', fix:'つぎの パンやさんを さがして、おみせを ひきついだよ。'}}
+    ]},
+  { id:'yoriai', name:'よりあいの ようせい', candidate:'山本理顕', tag:'建築家・無所属', color:'#E8A87C', icon:'🏘️', wing:'butterfly', x:1500, y:1180,
+    voice:'ちょうないかいの あつまりを、ちいさな「きょうわこく」に そだてる たねを もっているよ。',
+    hint:'すまいと ごきんじょに くわしい ようせい',
+    ideas:[
+      {t:'全住宅の耐震・地盤診断と無料ミニバス', b:'すべての家の安全を確かめ、近所の移動を無料でつなぐ。', fit:'防災に力を入れる自治体',
+        tr:{icon:'🌋', text:'じめんが ゆれて、きの いえが かたむいた！', effect:'shake', fix:'いえを ひとつずつ しらべて、ゆれに つよく なおしたよ。'}},
+      {t:'町内会リパブリック', b:'町内会サロンを、暮らしを自分たちで決める自治の単位に育てる。', fit:'自治会の担い手不足に悩む地域、マンション管理組合',
+        tr:{icon:'🏡', text:'となりの すに だれが すんでるかも しらない。もりの あつまりに だれも こない…', effect:'fog', fix:'あつまりの ばを、みんなで くらしを きめる ちいさな くにに そだてたよ。'}},
+      {t:'職住一体の住宅', b:'住む場所と働く場所を一つにした住まいをつくる。', fit:'住宅メーカー、デベロッパー、空き家活用',
+        tr:{icon:'😮‍💨', text:'しごとばと すみかが とおくて、まいにち いったり きたりで へとへと', effect:'slow', fix:'すむ ところと はたらく ところを ひとつに した いえを たてたよ。'}}
+    ]},
+  { id:'nukumori', name:'ぬくもりの ようせい', candidate:'浅賀由香', tag:'共産党公認', color:'#F2A0A0', icon:'🍲', wing:'round', x:900, y:760,
+    voice:'こどもたちの まいにちを、まず あたたかく するための あんを かかえているよ。',
+    hint:'こどもの まいにちを あたためる ようせい',
+    ideas:[
+      {t:'体育館エアコン100%と温かい中学校給食', b:'学びの場と食事を、季節を問わず快適にする。', fit:'学校環境を見直す自治体、避難所機能の強化',
+        tr:{icon:'🥶', text:'よるの もりが さむくて、おなかも ぺこぺこ…', effect:'dim', fix:'あったかい スープと、だんぼうの きいた こやを よういしたよ。'}},
+      {t:'子どもの地下鉄無料を18歳まで', b:'通学・外出の交通費を家庭から外す。', fit:'公営交通を持つ都市',
+        tr:{icon:'🦊', text:'こぎつねが、とおくの がっこうへ いく のりもの だいを はらえない', effect:'slow', fix:'18さいまで、こどもの のりものは ただに したよ。'}},
+      {t:'学校トイレに生理用品を', b:'必要な人がいつでも使えるようにする。', fit:'学校、企業のオフィス',
+        tr:{icon:'🚻', text:'がっこうの トイレに ひつような ものが なくて、こまっている こが いる', effect:'fog', fix:'いつでも つかえる よう、トイレに おいて おいたよ。'}}
+    ]},
+  { id:'mado', name:'ひらいた まどの ようせい', candidate:'藤川祥子', tag:'市民団体代表・無所属', color:'#B5A8E0', icon:'🪟', wing:'pointed', x:1180, y:1500,
+    voice:'しまった へやの まどを あけて、みんなで きめる みちを さがしているよ。',
+    hint:'みんなで きめる こと、ささえる ことに くわしい ようせい',
+    ideas:[
+      {t:'徹底した情報公開とオープンな市長室', b:'決める過程を見えるようにして、信頼を取り戻す。', fit:'信頼回復を目指す自治体・組織',
+        tr:{icon:'🌫️', text:'きりが こくて、どっちに いけば いいか わからない…', effect:'fog', fix:'まどを あけて きりを はらい、みんなに みちを みせたよ。'}},
+      {t:'住民投票条例の制定', b:'大事なことを市民が直接選べる仕組みをつくる。', fit:'市民参加を広げたい自治体',
+        tr:{icon:'⚡', text:'もりの だいじな ことを、だれかが かってに きめちゃった！', effect:'shake', fix:'だいじな ことは、みんなの いっぴょうで きめる きまりを つくったよ。'}},
+      {t:'不登校への対応とケア職の処遇改善', b:'子どもとケアを担う人の両方を支える。', fit:'教育委員会、フリースクール、福祉事業者',
+        tr:{icon:'🦌', text:'がっこうに いけなくなった こじかと、ささえる せんせいが つかれきっている', effect:'dim', fix:'こじかの いばしょを ふやして、ささえる せんせいの くらしも まもったよ。'}}
+    ]}
+];
+const EFFECTS = {
+  slow:'あしが おもい（あるくのが おそくなる）',
+  thorn:'いばらに ひっかかる（あるくのが おそくなる）',
+  shake:'じめんが ぐらぐら（あるくのが おそくなる）',
+  dim:'ランタンの あかりが よわくなる',
+  fog:'きりで まわりが みえにくい'
+};
+const TROUBLES = [];
+FAIRIES.forEach(f=>f.ideas.forEach((idea,i)=>TROUBLES.push(Object.assign({id:`${f.id}-${i}`,f:f.id,i},idea.tr))));
+const trById = Object.fromEntries(TROUBLES.map(t=>[t.id,t]));
+const byId = Object.fromEntries(FAIRIES.map(f=>[f.id,f]));
+const RUN_N = FAIRIES.length;
+
+const $ = s => document.querySelector(s);
+const cv = $('#game'), ctx = cv.getContext('2d');
+const dark = document.createElement('canvas'), dctx = dark.getContext('2d');
+let W=0, H=0, DPR=1;
+function resize(){
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  dark.width = cv.width; dark.height = cv.height;
+}
+window.addEventListener('resize', resize); resize();
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd = mulberry32(20261018);
+const WW=1800, WH=1800;
+const START={x:760,y:1640};
+
+// ---------- ground ----------
+const ground=document.createElement('canvas'); ground.width=WW; ground.height=WH;
+const g=ground.getContext('2d');
+g.fillStyle='#2C4A39'; g.fillRect(0,0,WW,WH);
+const mossC=['#335642','#28432F','#3A5E46','#2F503C'];
+for(let i=0;i<900;i++){g.globalAlpha=.45;g.fillStyle=mossC[i%4];g.beginPath();g.ellipse(rnd()*WW,rnd()*WH,10+rnd()*40,6+rnd()*22,rnd()*3,0,7);g.fill();}
+g.globalAlpha=.55; g.strokeStyle='#4A6248'; g.lineWidth=30; g.lineCap='round'; g.lineJoin='round';
+const route=[START,FAIRIES[4],FAIRIES[0],FAIRIES[2],FAIRIES[5],FAIRIES[3],FAIRIES[1],FAIRIES[4]];
+g.beginPath(); g.moveTo(route[0].x,route[0].y);
+for(let i=1;i<route.length;i++){const a=route[i-1],b=route[i];g.quadraticCurveTo((a.x+b.x)/2+(rnd()-.5)*200,(a.y+b.y)/2+(rnd()-.5)*200,b.x,b.y);}
+g.stroke();
+g.globalAlpha=.3; g.strokeStyle='#6B7F5E'; g.lineWidth=10; g.stroke();
+// mushrooms & flowers
+for(let i=0;i<500;i++){g.globalAlpha=.7;g.fillStyle=['#E9E3B0','#D9C8E8','#F3F0E0'][i%3];g.beginPath();g.arc(rnd()*WW,rnd()*WH,1.4+rnd()*1.6,0,7);g.fill();}
+for(let i=0;i<70;i++){
+  const x=rnd()*WW,y=rnd()*WH; g.globalAlpha=.9;
+  g.fillStyle='#E8DCC0';g.fillRect(x-1.5,y-5,3,6);
+  g.fillStyle=['#C2553E','#D98E4A','#B49AD6'][i%3];g.beginPath();g.ellipse(x,y-5,6,3.6,0,Math.PI,0);g.fill();
+}
+// fairy clearings
+for(const f of FAIRIES){const gr=g.createRadialGradient(f.x,f.y,0,f.x,f.y,90);gr.addColorStop(0,'rgba(120,150,110,.35)');gr.addColorStop(1,'rgba(120,150,110,0)');g.globalAlpha=1;g.fillStyle=gr;g.fillRect(f.x-90,f.y-90,180,180);}
+g.globalAlpha=1;
+
+const trees=[];
+for(let tries=0;trees.length<240&&tries<8000;tries++){
+  const x=30+rnd()*(WW-60), y=30+rnd()*(WH-60);
+  if(Math.hypot(x-START.x,y-START.y)<110) continue;
+  if(FAIRIES.some(f=>Math.hypot(x-f.x,y-f.y)<95)) continue;
+  if(trees.some(t=>Math.hypot(x-t.x,y-t.y)<54)) continue;
+  trees.push({x,y,r:24+rnd()*20,s:rnd()});
+}
+const flies=Array.from({length:140},()=>({x:rnd()*WW,y:rnd()*WH,p:rnd()*7,s:.5+rnd()}));
+FAIRIES.forEach((f,i)=>f.ph=i*1.3);
+const parts=[];
+function burst(x,y,color,n=18,spd=90){for(let i=0;i<n;i++){const a=Math.random()*7,s=spd*(.4+Math.random());parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-30,life:1,decay:.7+Math.random()*.6,c:color,r:1.5+Math.random()*2.2});}}
+
+// ---------- state ----------
+const p={x:START.x,y:START.y,face:1,step:0};
+const keys={}; let target=null, pointerDown=false;
+let started=false, paused=false, near=null;
+let trouble=null, troubleTimer=10, misses=0, helper=null, cleared=false, callFairy=null, callMsg='';
+const cam={x:0,y:0};
+const KEY='rakusen-mori-yokohama-2026-v3';
+let store={};
+try{const s=localStorage.getItem(KEY);if(s)store=JSON.parse(s)||{};}catch(e){}
+const met=new Set(store.met||[]), dex=new Set(store.dex||[]);
+let run=Array.isArray(store.run)&&store.run.length===RUN_N&&store.run.every(id=>trById[id])?store.run:newRun();
+const solved=new Set((store.solved||[]).filter(id=>run.includes(id)));
+const stars=Object.assign({},store.stars||{});
+let soundOn=!!store.sound;
+function newRun(){return FAIRIES.map(f=>`${f.id}-${Math.floor(Math.random()*3)}`).sort(()=>Math.random()-.5);}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({met:[...met],dex:[...dex],run,solved:[...solved],stars,sound:soundOn}));}catch(e){}}
+function updateCount(){
+  $('#count').textContent=`ようせい ${met.size}/${FAIRIES.length}`;
+  $('#solvedCount').textContent=`こまりごと ${solved.size}/${RUN_N}`;
+}
+updateCount();
+if(solved.size===RUN_N) cleared=true;
+
+// ---------- sound (WebAudio, default off) ----------
+let ac=null;
+function tone(freq,dur=.25,type='sine',vol=.12,delay=0){
+  if(!soundOn) return;
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended') ac.resume();
+    const t=ac.currentTime+delay, o=ac.createOscillator(), gn=ac.createGain();
+    o.type=type;o.frequency.setValueAtTime(freq,t);
+    gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(vol,t+.02);gn.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(gn).connect(ac.destination);o.start(t);o.stop(t+dur+.05);
+  }catch(e){}
+}
+const SFX={
+  meet:()=>{[784,988,1319].forEach((f,i)=>tone(f,.4,'triangle',.08,i*.09));},
+  trouble:()=>{tone(330,.35,'square',.04);tone(262,.45,'square',.04,.18);},
+  wrong:()=>{tone(220,.25,'triangle',.08);tone(196,.3,'triangle',.07,.12);},
+  solve:()=>{[523,659,784,1047,1319].forEach((f,i)=>tone(f,.5,'triangle',.08,i*.08));},
+  clear:()=>{[523,659,784,659,784,1047].forEach((f,i)=>tone(f,.6,'sine',.09,i*.14));},
+  tap:()=>tone(880,.08,'sine',.05)
+};
+function renderSound(){const b=$('#soundBtn');b.textContent=soundOn?'🔊':'🔇';b.setAttribute('aria-pressed',soundOn);}
+renderSound();
+$('#soundBtn').onclick=()=>{soundOn=!soundOn;save();renderSound();if(soundOn)SFX.tap();};
+
+// ---------- input ----------
+addEventListener('keydown',e=>{
+  keys[e.key.toLowerCase()]=true;
+  if(!started) return;
+  if((e.key===' '||e.key==='Enter')&&near&&!paused&&!helper){e.preventDefault();openFairy(near);}
+  if((e.key==='e'||e.key==='E')&&trouble&&!paused&&!helper) openCall();
+  if(e.key==='Escape'&&paused&&!helper) closeSheet();
+});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
+function setTarget(e){const r=cv.getBoundingClientRect();target={x:e.clientX-r.left+cam.x,y:e.clientY-r.top+cam.y};}
+cv.addEventListener('pointerdown',e=>{if(paused||!started)return;pointerDown=true;cv.setPointerCapture(e.pointerId);setTarget(e);});
+cv.addEventListener('pointermove',e=>{if(pointerDown)setTarget(e);});
+const endP=()=>{pointerDown=false;target=null;};
+cv.addEventListener('pointerup',endP); cv.addEventListener('pointercancel',endP);
+
+function blocked(x,y){
+  if(x<18||y<18||x>WW-18||y>WH-18) return true;
+  for(const t of trees){if(Math.abs(t.x-x)<20&&Math.abs(t.y-y)<20&&Math.hypot(t.x-x,t.y-y)<15)return true;}
+  return false;
+}
+
+// ---------- troubles ----------
+function startTrouble(){
+  const left=run.filter(id=>!solved.has(id)).map(id=>trById[id]);
+  if(!left.length) return;
+  const ready=left.filter(t=>met.has(t.f));
+  const pool=(ready.length&&Math.random()<.7)?ready:left;
+  trouble=pool[Math.floor(Math.random()*pool.length)];
+  misses=0; callMsg='';
+  $('#tIcon').textContent=trouble.icon;
+  $('#tText').textContent=trouble.text;
+  $('#tEffect').textContent=EFFECTS[trouble.effect];
+  $('#trouble').classList.add('show');
+  SFX.trouble();
+}
+function endTrouble(){
+  trouble=null;$('#trouble').classList.remove('show');
+  troubleTimer=14+Math.random()*10;
+}
+
+// ---------- update ----------
+function update(dt,time){
+  for(let i=parts.length-1;i>=0;i--){const q=parts[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=40*dt;q.vx*=.98;q.life-=q.decay*dt;if(q.life<=0)parts.splice(i,1);}
+  if(helper){
+    helper.t+=dt;
+    const k=Math.min(1,helper.t/1.1), e=1-Math.pow(1-k,3);
+    if(Math.random()<.7) parts.push({x:helper.x+(Math.random()-.5)*10,y:helper.y+(Math.random()-.5)*10,vx:(Math.random()-.5)*20,vy:(Math.random()-.5)*20,life:1,decay:1.4,c:helper.f.color,r:1.5+Math.random()*2});
+    if(helper.phase==='in'){
+      helper.x=helper.sx+(p.x+26-helper.sx)*e; helper.y=helper.sy+(p.y-40-helper.sy)*e;
+      if(k>=1&&!helper.shown){helper.shown=true;burst(helper.x,helper.y,helper.f.color,34,130);burst(helper.x,helper.y,'#F6E3A6',16,90);SFX.solve();setTimeout(()=>showResolve(helper.f,helper.tr),450);}
+    } else {
+      helper.x=(p.x+26)+(helper.sx-(p.x+26))*e; helper.y=(p.y-40)+(helper.sy-(p.y-40))*e;
+      if(k>=1) helper=null;
+    }
+  }
+  if(!started||paused) return;
+  if(!trouble&&!cleared&&solved.size<RUN_N){troubleTimer-=dt;if(troubleTimer<=0)startTrouble();}
+  let dx=0,dy=0;
+  if(keys.arrowleft||keys.a)dx-=1; if(keys.arrowright||keys.d)dx+=1;
+  if(keys.arrowup||keys.w)dy-=1; if(keys.arrowdown||keys.s)dy+=1;
+  if(target&&!dx&&!dy){const ddx=target.x-p.x,ddy=target.y-p.y,d=Math.hypot(ddx,ddy);if(d>8){dx=ddx/d;dy=ddy/d;}}
+  const m=Math.hypot(dx,dy);
+  if(m>0){
+    dx/=m;dy/=m;
+    const slow=trouble&&['slow','thorn','shake'].includes(trouble.effect);
+    const sp=175*(slow?.45:1)*dt;
+    const nx=p.x+dx*sp, ny=p.y+dy*sp;
+    if(!blocked(nx,p.y)) p.x=nx;
+    if(!blocked(p.x,ny)) p.y=ny;
+    if(dx) p.face=dx>0?1:-1;
+    p.step+=dt*10;
+  }
+  near=null; let best=80;
+  for(const f of FAIRIES){const d=Math.hypot(f.x-p.x,f.y-p.y);if(d<best){best=d;near=f;}}
+  const tb=$('#talk');
+  if(near&&!helper){tb.textContent=`${met.has(near.id)?near.name:'ひかる なにか'}に はなしかける`;tb.classList.add('show');}else tb.classList.remove('show');
+}
+
+// ---------- drawing ----------
+function drawTree(t){
+  ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(t.x,t.y+2,t.r*.6,t.r*.22,0,0,7);ctx.fill();
+  ctx.fillStyle='#5A3E30';ctx.fillRect(t.x-5,t.y-22,10,24);
+  const cy=t.y-26-t.r*.55;
+  ctx.fillStyle='#1E3B2C';ctx.beginPath();ctx.arc(t.x,cy+4,t.r,0,7);ctx.fill();
+  ctx.fillStyle='#25503A';ctx.beginPath();ctx.arc(t.x-t.r*.3,cy-t.r*.15,t.r*.7,0,7);ctx.fill();
+  ctx.fillStyle='#2F6047';ctx.beginPath();ctx.arc(t.x+t.r*.25*(t.s>.5?1:-1),cy-t.r*.35,t.r*.45,0,7);ctx.fill();
+}
+function wingPath(c,style){
+  c.beginPath();
+  if(style==='pointed'){c.moveTo(0,0);c.quadraticCurveTo(10,-16,22,-12);c.quadraticCurveTo(14,-2,0,0);}
+  else if(style==='leaf'){c.moveTo(0,0);c.quadraticCurveTo(8,-18,20,-8);c.quadraticCurveTo(10,2,0,0);}
+  else if(style==='butterfly'){c.ellipse(11,-8,10,8,.3,0,7);c.moveTo(0,0);c.ellipse(9,4,6,5,-.4,0,7);}
+  else {c.ellipse(12,-6,11,6,.4,0,7);}
+}
+function drawFairy(c,f,x,y,time,sc,known){
+  y+=Math.sin(time*2+f.ph)*4*sc;
+  const flap=.55+Math.sin(time*12+f.ph)*.3;
+  c.save();c.translate(x,y);c.scale(sc,sc);
+  c.fillStyle=known?'rgba(235,248,240,.7)':'rgba(235,248,240,.35)';
+  for(const s of [-1,1]){c.save();c.scale(s,1);c.rotate(flap*.8-.2);wingPath(c,f.wing);c.fill();c.restore();}
+  c.fillStyle=known?f.color:'#C9D6CC';c.beginPath();c.arc(0,0,10,0,7);c.fill();
+  c.fillStyle='rgba(255,255,255,.55)';c.beginPath();c.arc(-3,-4,4,0,7);c.fill();
+  if(known){
+    c.fillStyle='#22332A';c.beginPath();c.arc(-3.5,1,1.6,0,7);c.arc(3.5,1,1.6,0,7);c.fill();
+    c.strokeStyle='#22332A';c.lineWidth=1;c.beginPath();c.arc(0,3.5,2.2,.2,Math.PI-.2);c.stroke();
+    c.fillStyle='rgba(240,120,120,.45)';c.beginPath();c.arc(-6,4,1.8,0,7);c.arc(6,4,1.8,0,7);c.fill();
+    c.font='13px sans-serif';c.textAlign='center';c.fillText(f.icon,0,-18);
+  } else {
+    c.fillStyle='#4A5E52';c.font='bold 11px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('?',0,1);c.textBaseline='alphabetic';
+  }
+  c.restore();
+}
+function drawPlayer(time){
+  const bob=Math.abs(Math.sin(p.step))*2;
+  ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(p.x,p.y+2,10,4,0,0,7);ctx.fill();
+  ctx.fillStyle='#4E6E9E';ctx.beginPath();ctx.moveTo(p.x-10,p.y);ctx.lineTo(p.x+10,p.y);ctx.lineTo(p.x,p.y-24-bob);ctx.fill();
+  ctx.fillStyle='#F1D6B8';ctx.beginPath();ctx.arc(p.x,p.y-24-bob,6,0,7);ctx.fill();
+  ctx.fillStyle='#3D5A80';ctx.beginPath();ctx.arc(p.x,p.y-26-bob,6.5,Math.PI,0);ctx.fill();
+  const lx=p.x+p.face*11, ly=p.y-10-bob;
+  ctx.strokeStyle='#6B5A3A';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(lx,ly-6);ctx.lineTo(lx,ly-2);ctx.stroke();
+  const dim=trouble&&trouble.effect==='dim';
+  ctx.fillStyle=dim?'#9A7A3A':'#F2C14E';ctx.beginPath();ctx.arc(lx,ly+1,3.5,0,7);ctx.fill();
+  if(trouble&&trouble.effect==='thorn'){
+    ctx.strokeStyle='#6E8F3E';ctx.lineWidth=2;
+    for(let i=0;i<6;i++){const a=i/6*Math.PI*2+time*.3;ctx.beginPath();ctx.moveTo(p.x+Math.cos(a)*14,p.y+Math.sin(a)*6);ctx.lineTo(p.x+Math.cos(a)*22,p.y-8+Math.sin(a)*6);ctx.stroke();}
+  }
+  if(trouble&&!paused){ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText(trouble.icon,p.x,p.y-44-bob+Math.sin(time*4)*2);}
+}
+function hole(x,y,r,a){
+  const gr=dctx.createRadialGradient(x,y,0,x,y,r);
+  gr.addColorStop(0,`rgba(0,0,0,${a})`);gr.addColorStop(.55,`rgba(0,0,0,${a*.75})`);gr.addColorStop(1,'rgba(0,0,0,0)');
+  dctx.fillStyle=gr;dctx.beginPath();dctx.arc(x,y,r,0,7);dctx.fill();
+}
+
+function render(time){
+  let sx=0,sy=0;
+  if(trouble&&trouble.effect==='shake'&&!paused){sx=Math.sin(time*40)*2.5;sy=Math.cos(time*33)*2;}
+  cam.x=Math.max(0,Math.min(WW-W,p.x-W/2))+sx; cam.y=Math.max(0,Math.min(WH-H,p.y-H/2))+sy;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='#17291F';ctx.fillRect(0,0,W,H);
+  ctx.drawImage(ground,-cam.x,-cam.y);
+  ctx.save();ctx.translate(-cam.x,-cam.y);
+  const ents=[];
+  for(const t of trees) if(t.x>cam.x-80&&t.x<cam.x+W+80&&t.y>cam.y-20&&t.y<cam.y+H+110) ents.push([t.y,()=>drawTree(t)]);
+  for(const f of FAIRIES){ if(helper&&helper.f===f) continue; ents.push([f.y,()=>drawFairy(ctx,f,f.x+Math.sin(time*.5+f.ph)*8,f.y-14,time,1,met.has(f.id))]); }
+  ents.push([p.y,()=>drawPlayer(time)]);
+  if(helper) ents.push([helper.y+40,()=>drawFairy(ctx,helper.f,helper.x,helper.y,time,1.25,true)]);
+  ents.sort((a,b)=>a[0]-b[0]).forEach(e=>e[1]());
+  ctx.restore();
+
+  // darkness
+  dctx.setTransform(DPR,0,0,DPR,0,0);
+  dctx.globalCompositeOperation='source-over';
+  dctx.clearRect(0,0,W,H);
+  dctx.fillStyle='rgba(9,20,16,.86)';dctx.fillRect(0,0,W,H);
+  dctx.globalCompositeOperation='destination-out';
+  let lr=190;
+  if(trouble&&trouble.effect==='dim') lr=95+Math.sin(time*9)*12;
+  if(trouble&&trouble.effect==='fog') lr=125;
+  const flick=1+Math.sin(time*7)*.02+Math.sin(time*13)*.015;
+  hole(p.x-cam.x,p.y-cam.y-12,lr*flick,1);
+  for(const f of FAIRIES) if(!(helper&&helper.f===f)) hole(f.x-cam.x,f.y-cam.y-14,met.has(f.id)?80:55,.85);
+  if(helper) hole(helper.x-cam.x,helper.y-cam.y,100,.95);
+  ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(dark,0,0);
+
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(trouble&&trouble.effect==='fog'){
+    for(let i=0;i<7;i++){
+      const x=((i*173+time*18)%(W+300))-150, y=(i*97)%H+Math.sin(time*.5+i)*20;
+      const gr=ctx.createRadialGradient(x,y,0,x,y,220);gr.addColorStop(0,'rgba(200,214,208,.33)');gr.addColorStop(1,'rgba(200,214,208,0)');
+      ctx.fillStyle=gr;ctx.fillRect(x-220,y-220,440,440);
+    }
+  }
+  ctx.globalCompositeOperation='lighter';
+  const glowList=FAIRIES.filter(f=>!(helper&&helper.f===f)).map(f=>[f,f.x+Math.sin(time*.5+f.ph)*8,f.y-14+Math.sin(time*2+f.ph)*4]);
+  if(helper) glowList.push([helper.f,helper.x,helper.y]);
+  for(const [f,wx,wy] of glowList){
+    const x=wx-cam.x,y=wy-cam.y;
+    if(x<-80||y<-80||x>W+80||y>H+80) continue;
+    const col=met.has(f.id)||(helper&&helper.f===f)?f.color:'#DDE8DC';
+    const r=(helper&&helper.f===f?56:34)+Math.sin(time*3+f.ph)*5;
+    const gr=ctx.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col+'88');gr.addColorStop(1,col+'00');
+    ctx.fillStyle=gr;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+  }
+  for(const fl of flies){
+    const x=fl.x+Math.sin(time*fl.s+fl.p)*18-cam.x, y=fl.y+Math.cos(time*fl.s*.8+fl.p)*14-cam.y;
+    if(x<0||y<0||x>W||y>H) continue;
+    const a=(Math.sin(time*2*fl.s+fl.p)+1)/2;
+    ctx.fillStyle=`rgba(242,214,110,${.15+a*.6})`;ctx.beginPath();ctx.arc(x,y,1.6+a,0,7);ctx.fill();
+  }
+  for(const q of parts){
+    const x=q.x-cam.x,y=q.y-cam.y;
+    ctx.globalAlpha=Math.max(0,q.life);ctx.fillStyle=q.c;ctx.beginPath();ctx.arc(x,y,q.r,0,7);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  ctx.globalCompositeOperation='source-over';
+
+  if(started&&!(trouble&&trouble.effect==='fog')){
+    for(const f of FAIRIES){
+      if(met.has(f.id)) continue;
+      const x=f.x-cam.x,y=f.y-cam.y;
+      if(x>0&&y>0&&x<W&&y<H) continue;
+      const ang=Math.atan2(y-H/2,x-W/2);
+      const ex=W/2+Math.cos(ang)*(W/2-18), ey=H/2+Math.sin(ang)*(H/2-18);
+      const cx=Math.max(14,Math.min(W-14,ex)), cy=Math.max(80,Math.min(H-60,ey));
+      ctx.fillStyle='rgba(230,240,225,.7)';ctx.beginPath();ctx.arc(cx,cy,4+Math.sin(time*4+f.ph)*1.5,0,7);ctx.fill();
+    }
+  }
+}
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  update(dt,now/1000);render(now/1000);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ---------- UI ----------
+const sheet=$('#sheet'), body=$('#sheetBody');
+let onClose=null;
+function toast(msg,ms=2800){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),ms);}
+function openSheet(){paused=true;target=null;pointerDown=false;$('#talk').classList.remove('show');sheet.classList.add('open');body.scrollTop=0;}
+function closeSheet(){if(helper&&!helper.shown)return;sheet.classList.remove('open');paused=false;callFairy=null;const c=onClose;onClose=null;if(c)c();}
+$('#closeBtn').onclick=closeSheet;
+$('#talk').onclick=()=>{if(near)openFairy(near);};
+$('#callBtn').onclick=()=>{if(!paused&&!helper)openCall();};
+$('#startBtn').onclick=()=>{
+  $('#intro').classList.add('hide');started=true;
+  SFX.tap();
+  toast(met.size?'おかえりなさい。もりの こまりごとが まっているよ':'ランタンの あかりで、ひかる ようせいを さがそう');
+};
+const starStr=n=>'★'.repeat(n)+'☆'.repeat(3-n);
+
+function portrait(f){
+  const c=document.createElement('canvas');c.width=168;c.height=168;c.className='portrait';c.setAttribute('aria-hidden','true');
+  const x=c.getContext('2d');
+  const gr=x.createRadialGradient(84,84,8,84,84,84);gr.addColorStop(0,'#2F5A45');gr.addColorStop(1,'#16291F');
+  x.fillStyle=gr;x.beginPath();x.arc(84,84,84,0,7);x.fill();
+  const g2=x.createRadialGradient(84,90,0,84,90,70);g2.addColorStop(0,f.color+'aa');g2.addColorStop(1,f.color+'00');
+  x.fillStyle=g2;x.fillRect(0,0,168,168);
+  drawFairy(x,f,84,100,1.2,3.4,true);
+  return c;
+}
+function ideaHTML(f,i,idea){
+  const used=dex.has(`${f.id}-${i}`);
+  return `<li><p class="it">${idea.t}${used?'<span class="used">つかった！</span>':''}</p><p class="ib">${idea.b}</p><p class="fit">ほかで生きそうな場所：${idea.fit}</p></li>`;
+}
+
+function openFairy(f){
+  const first=!met.has(f.id);
+  met.add(f.id);save();updateCount();
+  if(first){burst(f.x,f.y-14,f.color,26,110);SFX.meet();}
+  body.innerHTML=`
+    <div class="fhead"><span id="pt"></span>
+      <div><h2>${f.name}</h2>
+      <p class="origin">横浜市長選2026で<strong>${f.candidate}</strong>さん（${f.tag}）が語った提案から生まれた妖精</p></div></div>
+    <p class="voice">${first?'わあ、みつけて くれたんだね！ ':''}${f.voice}<br>こまったときは よんでね。</p>
+    <h3>もっている ちえ</h3>
+    <ul class="ideas">${f.ideas.map((idea,i)=>ideaHTML(f,i,idea)).join('')}</ul>
+    <p class="note">公開討論会での発言と報道をもとにした要約です。ご本人の登録・確認は受けていません。妖精の姿は提案のテーマから描いたもので、ご本人の容姿とは関係ありません。</p>
+    ${trouble?'<button class="primary" id="toCall">いまの こまりごとで よぶ</button>':''}`;
+  $('#pt').replaceWith(portrait(f));
+  const tc=$('#toCall'); if(tc) tc.onclick=()=>{openCall(f);};
+  openSheet();
+  if(first) setTimeout(()=>toast(`${f.name}が なかまに なった`),350);
+}
+
+function openCall(pre){
+  if(!trouble) return;
+  if(pre&&pre.id) callFairy=pre;
+  const list=FAIRIES.filter(f=>met.has(f.id));
+  const tf=byId[trouble.f];
+  const hintHTML = misses>=1?`<p class="miss">ヒント：${tf.hint}が いいかも${misses>=2&&met.has(tf.id)?'（ひかっている ようせい）':''}</p>`:'';
+  const msgHTML = callMsg?`<p class="miss">${callMsg}</p>`:'';
+  let inner;
+  if(callFairy){
+    const f=callFairy;
+    inner=`<button class="back" id="backBtn">← ほかの ようせいに する</button>
+      <p class="origin">${f.icon} ${f.name}の ちえ。どれを つかう？</p>
+      <div class="callist">${f.ideas.map((idea,i)=>`<button data-i="${i}"><span><b>${idea.t}</b><span class="sm">${idea.b}</span></span></button>`).join('')}</div>`;
+  } else if(list.length){
+    inner=`<p class="origin">だれの ちえを かりる？</p>
+      <div class="callist">${list.map(f=>`<button data-id="${f.id}" class="${misses>=2&&f.id===tf.id?'glow':''}"><span class="ic" style="background:${f.color}55">${f.icon}</span><span>${f.name}<span class="sm">${f.candidate}さんの提案から</span></span></button>`).join('')}</div>
+      ${list.length<FAIRIES.length?'<p class="note">ぴったりの ようせいが いなければ、もりを あるいて さがしに いこう。まだ あっていない ようせいが いるよ。</p>':''}`;
+  } else {
+    inner='<p class="miss">まだ ようせいに であっていないよ。もりの なかの ひかりを さがそう。</p>';
+  }
+  body.innerHTML=`<h2>${trouble.icon} だれを よぶ？</h2><p class="voice" style="margin-top:8px">${trouble.text}</p>${msgHTML}${hintHTML}${inner}
+    <button class="primary sub" id="laterBtn">いったん もりに もどる</button>`;
+  body.querySelectorAll('.callist button[data-id]').forEach(b=>b.onclick=()=>{SFX.tap();callFairy=byId[b.dataset.id];callMsg='';openCall();});
+  body.querySelectorAll('.callist button[data-i]').forEach(b=>b.onclick=()=>judge(callFairy,+b.dataset.i));
+  const bb=$('#backBtn'); if(bb) bb.onclick=()=>{callFairy=null;callMsg='';openCall();};
+  $('#laterBtn').onclick=closeSheet;
+  if(!sheet.classList.contains('open')) openSheet(); else body.scrollTop=0;
+}
+
+function judge(f,i){
+  if(f.id===trouble.f&&i===trouble.i){
+    callFairy=null;callMsg='';
+    sheet.classList.remove('open');paused=true;
+    const ang=Math.atan2(f.y-p.y,f.x-p.x);
+    helper={f,tr:trouble,phase:'in',t:0,sx:p.x+Math.cos(ang)*420,sy:p.y+Math.sin(ang)*420,x:0,y:0,shown:false};
+    $('#trouble').classList.remove('show');
+    return;
+  }
+  misses++; SFX.wrong();
+  if(f.id===trouble.f){
+    callMsg=`${f.name}「わたしの ちえだけど、べつの ちえの ほうが あうかも…」`;
+  } else {
+    callMsg=`${f.name}「うーん、それは わたしの とくいじゃ ないかも…」`;
+    callFairy=null;
+  }
+  openCall();
+}
+
+function showResolve(f,tr){
+  const st=Math.max(1,3-misses);
+  solved.add(tr.id);dex.add(tr.id);stars[tr.id]=Math.max(stars[tr.id]||0,st);save();updateCount();
+  const idea=f.ideas[tr.i];
+  body.innerHTML=`
+    <div class="fhead"><span id="pt"></span><div><h2>${f.name}が たすけに きた！</h2><p class="origin stars" aria-label="ほし ${st}こ">${starStr(st)}</p></div></div>
+    <p class="voice">${tr.fix}</p>
+    <div class="saved"><p class="origin" style="margin:0">つかった ちえ</p><p class="it">${idea.t}</p><p class="ib">${idea.b}</p><p class="fit">ほかで生きそうな場所：${idea.fit}</p></div>
+    <p class="note">${f.candidate}さんが横浜市長選2026で掲げた提案より。あなたの まちや しょくばにも、にた こまりごとは ありませんか？</p>
+    <button class="primary" id="okBtn">ありがとう！</button>`;
+  $('#pt').replaceWith(portrait(f));
+  $('#okBtn').onclick=closeSheet;
+  onClose=()=>{
+    if(helper){helper.phase='out';helper.t=0;}
+    endTrouble();
+    if(solved.size===RUN_N) setTimeout(showEnding,1300);
+  };
+  openSheet();
+}
+
+function totalStars(){return run.reduce((s,id)=>s+(stars[id]||0),0);}
+function showEnding(){
+  cleared=true; SFX.clear();
+  burst(p.x,p.y-30,'#F6E3A6',40,160);
+  const ts=totalStars();
+  body.innerHTML=`
+    <h2>もりの こまりごとを ぜんぶ かいけつ！</h2>
+    <p class="origin"><span class="stars">★</span> ${ts} / ${RUN_N*3}　${ts===RUN_N*3?'パーフェクト！':''}</p>
+    <p class="voice">えらばれなかった ちえも、ばしょが かわれば だれかを たすける。<br>あなたの まちの こまりごとに、つかえそうな ちえは あったかな。</p>
+    <ul class="ideas">${run.map(id=>{const t=trById[id],f=byId[t.f],i=f.ideas[t.i];return `<li><p class="ib" style="margin:0">${t.icon} ${t.text}</p><p class="it">${f.icon} ${i.t} <span class="stars">${starStr(stars[id]||1)}</span></p><p class="fit">ほかで生きそうな場所：${i.fit}</p></li>`}).join('')}</ul>
+    <p class="origin">あつめた ちえ ${dex.size}/${TROUBLES.length}　${dex.size<TROUBLES.length?'まだ みていない こまりごとが あるよ':'ぜんぶ あつめた！'}</p>
+    <div class="rowbtns"><button class="primary" id="againBtn">べつの こまりごとで あそぶ</button><button class="primary sub" id="shareBtn">シェア</button></div>`;
+  $('#againBtn').onclick=restartRun;
+  $('#shareBtn').onclick=share;
+  openSheet();
+}
+function restartRun(){
+  run=newRun(); solved.clear(); run.forEach(id=>delete stars[id]);
+  cleared=false; troubleTimer=6; save(); updateCount();
+  onClose=null; closeSheet();
+  toast('もりに また こまりごとの けはいが…');
+}
+async function share(){
+  const url=SHARE_URL||location.href;
+  const text=`らくせんしゃの もりで こまりごとを ${solved.size}つ かいけつ！ ★${totalStars()}/${RUN_N*3}・ちえ ${dex.size}/${TROUBLES.length}\nえらばれなかった ていあんが、べつの まちで いきるかも。 #らくせんしゃのもり`;
+  try{
+    if(navigator.share){await navigator.share({title:document.title,text,url});return;}
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(`${text}\n${url}`);toast('シェア用の ぶんしょうを コピーしたよ');}
+  catch(e){window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,'_blank','noopener');}
+}
+
+$('#bookBtn').onclick=()=>{
+  if(helper) return;
+  const ts=totalStars();
+  body.innerHTML=`
+    <h2>もりの てちょう</h2>
+    <h3>であった ようせい ${met.size}/${FAIRIES.length}</h3>
+    <ul class="book-list">${FAIRIES.map(f=>`<li>${met.has(f.id)?`<button class="back" data-f="${f.id}" style="padding:0;color:inherit;font-size:inherit;text-align:left">${f.icon} ${f.name} ›</button><br><span class="meta">${f.candidate}さんの提案から</span>`:'<span class="meta">？ まだ であっていない ようせい</span>'}</li>`).join('')}</ul>
+    <h3>こんかいの こまりごと ${solved.size}/${RUN_N}　<span class="stars">★${ts}</span></h3>
+    <ul class="book-list">${run.filter(id=>solved.has(id)).map(id=>{const t=trById[id];return `<li>${t.icon} ${t.text}<br><span class="meta">${byId[t.f].name}が たすけてくれた　<span class="stars">${starStr(stars[id]||1)}</span></span></li>`}).join('')||'<li class="meta">まだ ないよ</li>'}</ul>
+    <h3>ちえの ずかん ${dex.size}/${TROUBLES.length}</h3>
+    ${FAIRIES.map(f=>`<div class="dex">${f.ideas.map((idea,i)=>dex.has(`${f.id}-${i}`)?`<span class="on">${f.icon} ${idea.t}</span>`:`<span class="off">${met.has(f.id)?f.icon:'？'} ？？？</span>`).join('')}</div>`).join('')}
+    <p class="note">出典：2026年10月の候補者公開討論会での発言、共同通信・日本経済新聞・神奈川新聞などの報道。各候補の得票数は横浜市選挙管理委員会の確定値の公表後に追加します。</p>
+    <button class="primary sub" id="resetBtn">きろくを ぜんぶ けして はじめから</button>`;
+  body.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>openFairy(byId[b.dataset.f]));
+  $('#resetBtn').onclick=()=>{try{localStorage.removeItem(KEY);}catch(e){}location.reload();};
+  openSheet();
+};
+if(location.hash==='#debug') window.__mori={p,get trouble(){return trouble},startTrouble,openFairy,byId,judge,get misses(){return misses}};
+})();
+</script>
+</body>
+</html>
